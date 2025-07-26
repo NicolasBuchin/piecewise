@@ -1,0 +1,5 @@
+main
+*.o
+block-aligner/target/
+block-aligner/c/target/
+
