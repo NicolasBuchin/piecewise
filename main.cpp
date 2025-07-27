@@ -81,7 +81,27 @@ AlignmentResult piecewise_extension_alignment(
             result.score += k * scoring_params.match;
             temp_cigar_elements.push_back({Operation::Eq, (uintptr_t)k});
         } else {
-            // TODO: overlapping anchors
+             if (ref_diff < query_diff) {
+                const size_t inserted_part = ref_diff - query_diff;
+                result.score += scoring_params.gap_open + (inserted_part - 1) * scoring_params.gap_extend;
+                temp_cigar_elements.push_back({Operation::I, (uintptr_t)inserted_part});
+
+                const size_t matching_part = k + ref_diff;
+                result.score += matching_part * scoring_params.match;
+                temp_cigar_elements.push_back({Operation::Eq, (uintptr_t)matching_part});
+            } else if (ref_diff > query_diff) {
+                const size_t deleted_part = query_diff - ref_diff;
+                result.score += scoring_params.gap_open + (deleted_part - 1) * scoring_params.gap_extend;
+                temp_cigar_elements.push_back({Operation::D, (uintptr_t)deleted_part});
+
+                const size_t matching_part = k + query_diff;
+                result.score += matching_part * scoring_params.match;
+                temp_cigar_elements.push_back({Operation::Eq, (uintptr_t)matching_part});
+            } else {
+                const size_t matching_part = k + ref_diff;
+                result.score += matching_part * scoring_params.match;
+                temp_cigar_elements.push_back({Operation::Eq, (uintptr_t)matching_part});
+            }
         }
     }
 
